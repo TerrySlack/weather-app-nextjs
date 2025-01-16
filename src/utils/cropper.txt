@@ -1,0 +1,108 @@
+import { useState, useEffect } from 'react';
+
+interface CropDimensions {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface UseCropper {
+  cropDimensions: CropDimensions;
+  setCropDimensions: (dimensions: CropDimensions) => void;
+  croppedBlob: Blob | null;
+  error: string | null;
+  cropBlob: (blob: Blob) => void;
+}
+
+const useCropper = (image: HTMLImageElement): UseCropper => {
+  const [cropDimensions, setCropDimensions] = useState<CropDimensions>({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
+
+  const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const cropBlob = async (blob: Blob) => {
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        throw new Error('Failed to get canvas context');
+      }
+
+      canvas.width = cropDimensions.width;
+      canvas.height = cropDimensions.height;
+
+      ctx.drawImage(
+        image,
+        cropDimensions.x,
+        cropDimensions.y,
+        cropDimensions.width,
+        cropDimensions.height,
+        0,
+        0,
+        cropDimensions.width,
+        cropDimensions.height
+      );
+
+      const croppedBlob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/jpeg');
+      });
+
+      setCroppedBlob(croppedBlob);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  return {
+    cropDimensions,
+    setCropDimensions,
+    croppedBlob,
+    error,
+    cropBlob,
+  };
+};
+
+export default useCropper;
+
+//usage
+import React, { useEffect, useState } from 'react';
+import useCropper from './useCropper';
+
+const MyComponent = () => {
+  const image = new Image();
+  image.src = 'path/to/image.jpg';
+
+  const {
+    cropDimensions,
+    setCropDimensions,
+    croppedBlob,
+    error,
+    cropBlob,
+  } = useCropper(image);
+
+  const handleCrop = async () => {
+    const originalBlob = await fetch(image.src).then((response) => response.blob());
+    cropBlob(originalBlob);
+  };
+
+  return (
+    <div>
+      <button onClick={handleCrop}>Crop Image</button>
+      {croppedBlob && (
+        <img src={URL.createObjectURL(croppedBlob)} alt="Cropped Image" />
+      )}
+      {error && <p>Error: {error}</p>}
+    </div>
+  );
+};
+
+export default MyComponent;

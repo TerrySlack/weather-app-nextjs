@@ -1,1 +1,1 @@
-export { type ICity, type CityState } from "./types";
+export { type ICity, type CityState, type ILink } from "./types";
