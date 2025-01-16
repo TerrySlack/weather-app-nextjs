@@ -34,3 +34,8 @@ export interface CityState {
   allCities: ICity[];
   error?: string;
 }
+
+export interface ILink {
+  name: string;
+  path: string;
+}

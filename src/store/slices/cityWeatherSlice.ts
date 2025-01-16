@@ -43,10 +43,9 @@ export const fetchDataThunk = createAsyncThunk(
 
 //Throttle requests to once every 2 seconds, to handle multiple clicks on the search button
 export const throttledFetchData = throttleFunc(
-  (city: string) => fetchDataThunk(city),
+  (...args: unknown[]) => fetchDataThunk(args[0] as string),
   2000
 );
-
 //redux - for any cities that were previously searched, they were stored in sessionStorage.  Pass them here and update the allCities state
 export const updateAllCitiesThunk = createAsyncThunk(
   "citiesWeather/updateAllCitiesThunk",
