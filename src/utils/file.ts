@@ -191,3 +191,121 @@ export const processUploadedImageFiles = (
 
   return result;
 };
+
+
+//Utils to store files in sessionstorage
+//In TypeScript (or JavaScript), you can't directly store file objects, such as those created from uploading images, in sessionStorage because sessionStorage only supports storing strings. However, you can convert the file to a Base64 string and then store it.
+
+//Refactor
+/*
+//Convert each file to a Base64 string and store the array in sessionStorage:
+async function storeFilesInSessionStorage(files: File[]) {
+    const fileDataArray = await Promise.all(files.map(async (file) => {
+        const base64String = await fileToBase64(file);
+        return {
+            name: file.name,
+            type: file.type,
+            file: base64String
+        };
+    }));
+    sessionStorage.setItem('uploadedFiles', JSON.stringify(fileDataArray));
+}
+
+//Convert the file to a Base64 string:
+function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+    });
+}
+//Store the Base64 string in sessionStorage:
+async function storeFileInSessionStorage(file: File) {
+    try {
+        const base64String = await fileToBase64(file);
+        sessionStorage.setItem('uploadedImage', base64String);
+    } catch (error) {
+        console.error('Error converting file to Base64:', error);
+    }
+}
+
+//Convert the Base64 string to a Blob:
+function base64ToBlob(base64: string, contentType: string): Blob {
+    const byteCharacters = atob(base64.split(',')[1]);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: contentType });
+}
+//Convert the Blob to a File:
+function blobToFile(blob: Blob, fileName: string): File {
+    return new File([blob], fileName, { type: blob.type });
+}
+//Combine the steps to convert a Base64 string to a File:
+function base64ToFile(base64: string, fileName: string, contentType: string): File {
+    const blob = base64ToBlob(base64, contentType);
+    return blobToFile(blob, fileName);
+}
+*/
+
+//----------------
+// Function to convert a file to a Base64 string
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+  });
+}
+
+// Function to store an array of files in sessionStorage
+async function storeFilesInSessionStorage(files: File[]) {
+  const fileDataArray = await Promise.all(files.map(async (file) => {
+      const base64String = await fileToBase64(file);
+      return {
+          name: file.name,
+          type: file.type,
+          file: base64String
+      };
+  }));
+  sessionStorage.setItem('uploadedFiles', JSON.stringify(fileDataArray));
+}
+
+// Function to retrieve the array of files from sessionStorage
+function getFilesFromSessionStorage(): { name: string, type: string, file: string }[] | null {
+  const fileDataArrayString = sessionStorage.getItem('uploadedFiles');
+  return fileDataArrayString ? JSON.parse(fileDataArrayString) : null;
+}
+
+// Function to convert a Base64 string to a Blob
+function base64ToBlob(base64: string, contentType: string): Blob {
+  const byteCharacters = atob(base64.split(',')[1]);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: contentType });
+}
+
+// Function to convert a Blob to a File
+function blobToFile(blob: Blob, fileName: string): File {
+  return new File([blob], fileName, { type: blob.type });
+}
+
+// Function to convert a Base64 string to a File
+function base64ToFile(base64: string, fileName: string, contentType: string): File {
+  const blob = base64ToBlob(base64, contentType);
+  return blobToFile(blob, fileName);
+}
+
+// Example usage
+const storedFileDataArray = getFilesFromSessionStorage();
+if (storedFileDataArray) {
+  const files = storedFileDataArray.map(data => base64ToFile(data.file, data.name, data.type));
+  console.log(files); // This will log the array of File objects
+}

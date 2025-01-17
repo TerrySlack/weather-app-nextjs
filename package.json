@@ -9,8 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@mainframework/dropzone": "^1.0.8",
+    "@mainframework/dropzone": "^1.0.11",
     "@reduxjs/toolkit": "^2.5.0",
+    "deep-equal": "^2.2.3",
     "next": "15.1.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
