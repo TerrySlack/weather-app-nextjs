@@ -1,4 +1,6 @@
+import { FileData } from "@mainframework/dropzone/dist/esm/shared/types/types";
 import Image from "next/image";
+import { MouseEvent, KeyboardEvent } from "react";
 
 interface Resolution {
   width: number;
@@ -14,19 +16,46 @@ export const imgResolutions: Resolution[] = [
   { width: 3840, height: 2160, label: "xxl" },
 ];
 
-export const ResponsiveImage = ({ file }: { file: File }) => {
+interface IResponsiveImage {
+  alt?: string;
+  layout?: string;
+  file: FileData;
+
+  //onIdChange, onCancel, onRemove
+  onIdChange?: (e: MouseEvent<HTMLImageElement>) => void;
+  onKeyUp?: (e: KeyboardEvent<HTMLElement>) => void;
+  onRemove: (e: MouseEvent<HTMLButtonElement>) => void;
+}
+const defaultAlt = "Image";
+const defaultLayout = "intrinsic"; // Maintain aspect ratio
+
+export const ResponsiveImage = ({
+  alt = defaultAlt,
+  layout = defaultLayout,
+  file: { id, url },
+  onIdChange,
+  onKeyUp,
+  onRemove,
+}: IResponsiveImage) => {
   //TODO:  Using the nextjs image component, do I need to Add the check for svgs to ensure they are formatted.
   return (
     <div>
-      {imgResolutions.map((resolution) => (
-        <Image
-          key={resolution.label}
-          src={URL.createObjectURL(file)} // Convert File to URL for src
-          alt={`Image ${resolution.label}`}
-          width={resolution.width}
-          height={resolution.height}
-          layout="intrinsic" // Maintain aspect ratio
-        />
+      {imgResolutions.map((resolution, index) => (
+        <span>
+          <Image
+            key={resolution.label}
+            id={id}
+            className="object-cover" //Do I need this?
+            src={url} // Convert File to URL for src.  Do this in the dropzone
+            alt={`${alt}-${resolution.label}`}
+            width={resolution.width}
+            height={resolution.height}
+            layout={layout}
+            onClick={onIdChange}
+            onKeyUp={onKeyUp}
+          />
+          <button onClick={onRemove }>Remove</button>
+        </span>
       ))}
     </div>
   );

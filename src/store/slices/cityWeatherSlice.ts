@@ -50,10 +50,6 @@ export const throttledFetchData = throttleFunc(
 export const updateAllCitiesThunk = createAsyncThunk(
   "citiesWeather/updateAllCitiesThunk",
   async (cities: string[], { dispatch }) => {
-    // Dispatch fetchDataThunk for each city in the cities array
-    // for (const city of cities) {
-    //   await dispatch(fetchDataThunk(city)); // Dispatch the existing fetchDataThunk for each city
-    // }
     // Dispatch all thunks in parallel and wait for all of them to resolve
     await Promise.all(cities.map((city) => dispatch(fetchDataThunk(city))));
   }
@@ -107,13 +103,6 @@ const citiesWeatherSlice = createSlice({
         return acc;
       }, []);
     },
-    // updateAllCities: (state, action: PayloadAction<string[]>) => {
-    //   Promise.all( action.payload.map((city:string)=>{
-    //     updateCityData()
-    //   }));
-
-    //   //state.allCities = [...state.allCities, ...action.payload]; // Directly set the allCities array to the incoming array
-    // },
   },
   extraReducers: (builder) => {
     builder
